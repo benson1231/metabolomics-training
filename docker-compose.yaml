@@ -1,0 +1,10 @@
+services:
+  metaboanalystr4:
+    image: hidakakombu/metaboanalystr_4.0.0:1.2
+    container_name: metaboanalystr4
+    working_dir: /workspace
+    volumes:
+      - ./scripts:/workspace
+    tty: true
+    stdin_open: true
+    command: ["/bin/bash"]
