@@ -1,8 +1,8 @@
 services:
   metaboanalystr4:
-    image: benson1231/metaboanalystr:latest
+    image: benson1231/metaboanalystr:v1
     container_name: metaboanalystr4
-    working_dir: /workspace/results
+    working_dir: /workspace
     volumes:
       - ./scripts:/workspace/scripts
       - ./data:/workspace/data
