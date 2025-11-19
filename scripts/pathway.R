@@ -2,8 +2,10 @@
 # Pathway Analysis using Mummichog (export → pathway/)
 # ---------------------------------------------------------------
 
+rm(list = ls())
 data_dir <- "results/pathway"
 dir.create(data_dir, recursive = TRUE, showWarnings = FALSE)
+unlink(file.path(data_dir, "*"), recursive = TRUE)   # unlink 
 
 # Start log (terminal + file)
 sink("results/pathway/pathway.log", split = TRUE)
@@ -29,7 +31,7 @@ mSet <- SetPeakFormat(mSet, "mpt")
 mSet <- UpdateInstrumentParameters(mSet, 15.0, "mixed", "yes", 0.02)
 
 # Read peak list
-mSet <- Read.PeakListData(mSet, "peaks_ms1.txt")
+mSet <- Read.PeakListData(mSet, file.path(data_dir, "peaks_ms1.txt"))
 
 # Set RT unit
 mSet <- SetRTincluded(mSet, "seconds")
@@ -55,7 +57,7 @@ mSet <- PerformPSEA(mSet, "hsa_mfn", "current", 3 , 100)
 # Export pathway visualization (saved to pathway/)
 # ---------------------------------------------------------------
 
-mSet <- PlotPeaks2Paths(mSet, "peaks_to_paths_ms1_", "png", 72, width=8)
+mSet <- PlotPeaks2Paths(mSet, file.path(data_dir, "peaks_to_paths_ms1_"), "png", 72, width=8)
 
 message("✔ All pathway analysis outputs saved to: ", data_dir)
 

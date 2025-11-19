@@ -1,12 +1,16 @@
 ### Tutorial from https://www.metaboanalyst.ca/resources/vignettes/Introductions.html
-# Load MetaboAnalystR
-library(MetaboAnalystR)
+
+suppressPackageStartupMessages(library(MetaboAnalystR))
 
 # Create output folder
 dir.create("results/introduction", recursive = TRUE, showWarnings = FALSE)
 
-# Start log (terminal + file)
-sink("results/introduction/metabo_introduction.log", split = TRUE)
+# Start log (capture ALL outputs: stdout + messages)
+log_file <- "results/introduction/introduction.log"
+log_con <- file(log_file, open = "wt")
+
+sink(log_con, type = "output")   # capture output
+sink(log_con, type = "message")  # capture messages (warnings, messages)
 
 cat("====== MetaboAnalystR Introduction Log ======\n")
 cat("Start time:", as.character(Sys.time()), "\n\n")
@@ -43,8 +47,8 @@ cat("✓ Unzip completed.\n\n")
 cat(">>> Step 3: Reading peak list...\n")
 
 mSet <- Read.PeakList(mSet, upload_dir)
-cat("✓ Read completed.\n\n")
 
+cat("✓ Read completed.\n\n")
 
 ###################################################
 ### 4. Peak grouping
@@ -56,15 +60,14 @@ mSet <- SetPeakList.GroupValues(mSet)
 
 cat("✓ Peak grouping completed.\n\n")
 
-
 ###################################################
 ### 5. Sanity check
 ###################################################
 cat(">>> Step 5: Running sanity check...\n")
 
 mSet <- SanityCheckData(mSet)
-cat("✓ Sanity check completed.\n\n")
 
+cat("✓ Sanity check completed.\n\n")
 
 ###################################################
 ### 6. Missing value handling
@@ -80,21 +83,10 @@ writeLines(
 
 cat("✓ Missing value replacement completed.\n\n")
 
-
 ###################################################
-### 7. KNN imputation
+### 7. Small sample size check
 ###################################################
-cat(">>> Step 7: Performing KNN imputation...\n")
-
-mSet <- ImputeMissingVar(mSet, method = "knn_smp")
-
-cat("✓ KNN imputation completed.\n\n")
-
-
-###################################################
-### 8. Small sample size check
-###################################################
-cat(">>> Step 8: Checking sample size...\n")
+cat(">>> Step 7: Checking sample size...\n")
 
 small_check <- IsSmallSmplSize(mSet)
 writeLines(
@@ -104,23 +96,22 @@ writeLines(
 
 cat("✓ Sample size check completed.\n\n")
 
-
 ###################################################
-### 9. Normalization
+### 8. Normalization
 ###################################################
-cat(">>> Step 9: Performing normalization (Quantile + Log + Mean Center)...\n")
+cat(">>> Step 8: Normalizing data...\n")
 
 mSet <- PreparePrenormData(mSet)
 
-mSet<-Normalization(mSet, "SamplePQN", "NULL", "NULL", "P037", ratio=FALSE, ratioNum=20)
+mSet <- Normalization(mSet, "SamplePQN", "NULL", "NULL", "P037",
+                      ratio = FALSE, ratioNum = 20)
 
 cat("✓ Normalization completed.\n\n")
 
-
 ###################################################
-### 10. Output normalized plots
+### 9. Output normalized plots
 ###################################################
-cat(">>> Step 10: Exporting normalization plots...\n")
+cat(">>> Step 9: Exporting normalization plots...\n")
 
 mSet <- PlotNormSummary(
     mSet,
@@ -137,45 +128,37 @@ mSet <- PlotSampleNormSummary(
 
 cat("✓ Plots saved.\n\n")
 
-
 ###################################################
-### 11. Variable filtering examples
+### 10. Variable filtering
 ###################################################
-cat(">>> Step 11: Filtering variables...\n")
+cat(">>> Step 10: Filtering variables...\n")
 
 mSet <- FilterVariable(mSet, "mad", 5, "F", 25, TRUE)
 mSet <- FilterVariable(mSet, "nrsd", 5, "T", 25, TRUE)
 
 cat("✓ Filtering completed.\n\n")
 
-
 ###################################################
-### 12. Update dataset
+### 11. Update dataset
 ###################################################
-cat(">>> Step 12: Updating dataset...\n")
+cat(">>> Step 11: Updating dataset...\n")
 
-# Remove a sample from the data set, in this case sample "PIF_178"
-smpl.nm.vec <- c("PIF_178")# used to remove certain samples
-
-# Remove a feature from the data set
-feature.nm.vec <- c("2-Aminobutyrate")# used to remove certain feature, i.e. 2-Aminobutyrate
-
-# Remove a group from the data set, in this case remove the "control" samples
-grp.nm.vec <- c("control") # used to retain certain groups
+smpl.nm.vec <- c("PIF_178")
+feature.nm.vec <- c("2-Aminobutyrate")
+grp.nm.vec <- c("control")
 
 mSet <- UpdateData(mSet)
 
 cat("✓ Dataset updated.\n\n")
 
-
 ###################################################
-### 13. Save transformed data
+### 12. Save transformed data
 ###################################################
-cat(">>> Step 13: Saving transformed data...\n")
+cat(">>> Step 12: Saving transformed data...\n")
 
 setwd("results/introduction")
-PreparePDFReport(mSet, "User Name")
 
+PreparePDFReport(mSet, "User Name")
 SaveTransformedData(mSet)
 
 cat("✓ Transformed data saved.\n\n")
@@ -186,5 +169,6 @@ cat("✓ Transformed data saved.\n\n")
 cat("End time:", as.character(Sys.time()), "\n")
 cat("====== Log End ======\n")
 
-# Stop logging
-sink()
+sink(type = "message")
+sink(type = "output")
+close(log_con)

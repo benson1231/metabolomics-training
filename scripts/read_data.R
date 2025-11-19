@@ -1,12 +1,15 @@
 ### Tutorial from https://www.metaboanalyst.ca/resources/vignettes/Introductions.html
-# Load MetaboAnalystR
-library(MetaboAnalystR)
+suppressPackageStartupMessages(library(MetaboAnalystR))
 
 # Create output folder
 dir.create("results/read_data", recursive = TRUE, showWarnings = FALSE)
 
-# Start log (terminal + file)
-sink("results/read_data/metabo_read_data.log", split = TRUE)
+# Start log (capture ALL outputs: stdout + messages)
+log_file <- "results/read_data/read_data.log"
+log_con <- file(log_file, open = "wt")
+
+sink(log_con, type = "output")    # capture printed output
+sink(log_con, type = "message")   # capture warnings/messages
 
 cat("====== MetaboAnalystR Read Data Log ======\n")
 cat("Start time:", as.character(Sys.time()), "\n\n")
@@ -26,10 +29,12 @@ download.file(
 )
 
 mSet <- Read.TextData(mSet, conc_file, "rowu", "disc")
+
+cat("\n--- Read Message ---\n")
 print(mSet$msgSet$read.msg)
+cat("\n")
 
 cat("✓ Finished reading concentration dataset.\n\n")
-
 
 ##########################################
 ### 2. Read peak intensity table
@@ -46,10 +51,12 @@ download.file(
 )
 
 mSet <- Read.TextData(mSet, peak_file, "rowu", "disc")
+
+cat("\n--- Read Message ---\n")
 print(mSet$msgSet$read.msg)
+cat("\n")
 
 cat("✓ Finished reading LC-MS table.\n\n")
-
 
 ##########################################
 ### 3. Import example 3-column MS peaks
@@ -57,7 +64,7 @@ cat("✓ Finished reading LC-MS table.\n\n")
 
 cat(">>> Step 3: Reading example LC-MS 3-column peaks...\n")
 
-rm(list = ls())
+# Clean upload folder (do NOT clean workspace)
 unlink("results/read_data/upload", recursive = TRUE)
 
 mSet <- InitDataObjects("mspeak", "stat", FALSE)
@@ -73,8 +80,13 @@ mSet <- Read.PeakList(mSet, "results/read_data/upload")
 
 cat("✓ Finished importing MS peak list.\n\n")
 
+###################################################
+### End of log
+###################################################
+
 cat("End time:", as.character(Sys.time()), "\n")
 cat("====== Log End ======\n")
 
-# Stop logging
-sink()
+sink(type = "message")
+sink(type = "output")
+close(log_con)
