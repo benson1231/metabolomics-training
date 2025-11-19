@@ -202,37 +202,44 @@ write.csv(feat[, int_cols], file.path(export_dir, "intensity_matrix.csv"), row.n
 
 saveRDS(mSet, file.path(export_dir, "mSet_processed.rds"))
 
-
 # ---------------------------------------------------------------
-# 11. PCA Plot
+# PCA Analysis (using CAMERA feature matrix)
 # ---------------------------------------------------------------
 log_timestamp("Step 11: PCA plotting")
 
-int_mat <- metabo_input[, -c(1,2)]
+# Extract intensity matrix (columns 7–18 in this dataset)
+feat <- mSet@peakAnnotation$camera_output
+int_mat <- feat[, 7:18]
 int_mat[is.na(int_mat)] <- 0
 int_log <- log2(int_mat + 1)
 
+# Build metadata
 sample_names <- colnames(int_log)
-Group <- ifelse(grepl("Naive", sample_names),"Naive",
-         ifelse(grepl("QC", sample_names),"QC","Semi_immune"))
+Group <- ifelse(grepl("Naive", sample_names, TRUE), "Naive",
+         ifelse(grepl("QC", sample_names, TRUE), "QC", "Semi_immune"))
 
+meta <- data.frame(Sample = sample_names, Group = factor(Group))
+
+# PCA
 pca_res <- prcomp(t(int_log), scale. = TRUE)
-
 pca_df <- data.frame(
   Sample = rownames(pca_res$x),
-  PC1 = pca_res$x[,1],
-  PC2 = pca_res$x[,2],
-  Group = Group
+  PC1 = pca_res$x[, 1],
+  PC2 = pca_res$x[, 2],
+  Group = meta$Group
 )
 
+# Plot
+library(ggplot2)
 p <- ggplot(pca_df, aes(PC1, PC2, color = Group, label = Sample)) +
-  geom_point(size=4) +
-  geom_text(vjust=-0.6, size=3) +
+  geom_point(size = 4) +
+  geom_text(vjust = -0.6, size = 3) +
   theme_bw() +
-  ggtitle("PCA - LCMS Feature Matrix")
+  ggtitle("PCA of LC-MS Feature Matrix (CAMERA output)")
 
-ggsave(file.path(export_dir, "PCA.png"), plot=p, width=8, height=6, dpi=300)
+ggsave(file.path(export_dir, "PCA.png"), plot = p, width = 8, height = 6, dpi = 300)
 
+log_timestamp("PCA saved.")
 
 # ---------------------------------------------------------------
 # Finalize log
