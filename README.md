@@ -15,13 +15,6 @@ Rscript scripts/lcms.R
 Rscript scripts/pathway.R
 ```
 
-```bash
-
-
-```
-
-
-
 
 
 [MetaboAnalystR 4.0 Official Tutorial](https://www.metaboanalyst.ca/docs/RTutorial.xhtml)
