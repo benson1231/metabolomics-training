@@ -1,65 +1,87 @@
-# ---------------------------------------------------------------
-# Pathway Analysis using Mummichog (export → pathway/)
-# ---------------------------------------------------------------
+### https://www.metaboanalyst.ca/resources/vignettes/Pathway_Analysis.html
 
+### Pathway Analysis — Clean Working Example
 rm(list = ls())
+
+# -----------------------------------------
+# Setup directories
+# -----------------------------------------
 data_dir <- "results/pathway"
 dir.create(data_dir, recursive = TRUE, showWarnings = FALSE)
-unlink(file.path(data_dir, "*"), recursive = TRUE)   # unlink 
+unlink(file.path(data_dir, "*"), recursive = TRUE)
 
-# Start log (terminal + file)
-sink("results/pathway/pathway.log", split = TRUE)
-
-# Download example MS1 peak list
-download.file(
-  "https://raw.githubusercontent.com/Zhiqiang-PANG/MetaboRaw/master/examples/peaks_ms1.txt",
-  destfile = file.path(data_dir, "peaks_ms1.txt"),
-  mode = "auto"
-)
-
+# -----------------------------------------
+# Load MetaboAnalystR
+# -----------------------------------------
 suppressPackageStartupMessages(library(MetaboAnalystR))
 
-# Helper function to redirect all outputs to pathway/
-redirect_path <- function(filename) file.path(data_dir, filename)
+# -----------------------------------------
+# Compound list for ORA / Pathway Analysis
+# -----------------------------------------
+tmp.vec <- c(
+  "Acetoacetic acid", "Beta-Alanine", "Creatine", "Dimethylglycine",
+  "Fumaric acid", "Glycine", "Homocysteine", "L-Cysteine",
+  "L-Isolucine", "L-Phenylalanine", "L-Serine", "L-Threonine",
+  "L-Tyrosine", "L-Valine", "Phenylpyruvic acid", "Propionic acid",
+  "Pyruvic acid", "Sarcosine"
+)
 
-# ---------------------------------------------------------------
-# Initialize MetaboAnalyst data object
-# ---------------------------------------------------------------
+# -----------------------------------------
+# Initialize for pathway ORA
+# -----------------------------------------
+mSet <- InitDataObjects("conc", "pathora", FALSE)
 
-mSet <- InitDataObjects("mass_all", "mummichog", FALSE)
-mSet <- SetPeakFormat(mSet, "mpt")
-mSet <- UpdateInstrumentParameters(mSet, 15.0, "mixed", "yes", 0.02)
+# Load compound list
+mSet <- Setup.MapData(mSet, tmp.vec)
 
-# Read peak list
-mSet <- Read.PeakListData(mSet, file.path(data_dir, "peaks_ms1.txt"))
+# Cross-reference names vs HMDB/PubChem/KEGG/etc.
+mSet <- CrossReferencing(mSet, "name")
 
-# Set RT unit
-mSet <- SetRTincluded(mSet, "seconds")
+# Create mapping results table
+mSet <- CreateMappingResultTable(mSet)
 
-# QC / sanity check
-mSet <- SanityCheckMummichogData(mSet)
+# -----------------------------------------
+# Choose KEGG pathway library
+# hsa = human
+# -----------------------------------------
+mSet <- SetKEGG.PathLib(mSet, "hsa", "current")
 
-# Mummichog enrichment settings
-mSet <- SetPeakEnrichMethod(mSet, "mum", "v2")
-
-# Top 10% p-value cutoff
-pval_vec <- mSet$dataSet$mummi.proc$p.value
-pval_cut <- sort(pval_vec)[ceiling(length(pval_vec) * 0.1)]
-mSet <- SetMummichogPval(mSet, pval_cut)
-
-# ---------------------------------------------------------------
-# Perform Mummichog pathway enrichment
-# ---------------------------------------------------------------
-mSet <- PerformPSEA(mSet, "hsa_mfn", "current", 3 , 100)
+# Disable metabolome filtering (include all)
+mSet <- SetMetabolomeFilter(mSet, FALSE)
 
 
-# ---------------------------------------------------------------
-# Export pathway visualization (saved to pathway/)
-# ---------------------------------------------------------------
 
-mSet <- PlotPeaks2Paths(mSet, file.path(data_dir, "peaks_to_paths_ms1_"), "png", 72, width=8)
 
-message("✔ All pathway analysis outputs saved to: ", data_dir)
 
-# Stop logging
-sink()
+
+
+
+
+# still in development -------------------------------------------------------------------
+source("scripts/functions/DownloadKEGGoffline.R")
+DownloadKEGGoffline()
+
+source("scripts/functions/calculateOraScore_fixed.R")
+mSet <- calculateOraScore_fixed(mSet, "rbc", "hyperg")
+
+### API error -----------------------------------------------------------------------------
+# -----------------------------------------
+# Calculate ORA Hypergeometric Test
+# -----------------------------------------
+### API error
+mSet <- CalculateOraScore(mSet, "rbc", "hyperg")
+
+# -----------------------------------------
+# Plot Pathway Overview
+# -----------------------------------------
+mSet<-PlotPathSummary(mSet, T, file.path(data_dir, "path_view_0_"), "png", 72, width=NA)
+
+message("✔ Pathway overview saved.")
+
+# -----------------------------------------
+# Plot KEGG Pathway Diagram (選擇特定路徑)
+# Example: Glycine, serine and threonine metabolism
+# -----------------------------------------
+mSet<-PlotKEGGPath(mSet, "Glycine, serine and threonine metabolism",576, 480, "png", NULL)
+
+message("✔ Specific KEGG pathway saved.")
