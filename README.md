@@ -1,5 +1,9 @@
 # metabolomics-training
 
+[![Tests](https://github.com/benson1231/metabolomics-training/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/benson1231/metabolomics-training/actions/workflows/test.yml)
+[![Docker Engine](https://img.shields.io/badge/Docker-27.5.1-blue?logo=docker)](https://www.docker.com/get-started/)
+
+
 This repository provides a minimal, reproducible workflow to practice **metabolomics data analysis** using **MetaboAnalystR 4.0** inside a Docker container.
 
 The goal is to offer a clean, environment‑isolated setup so users can focus on LC-MS preprocessing, statistical analysis, enrichment/pathway analysis, and functional interpretations.
