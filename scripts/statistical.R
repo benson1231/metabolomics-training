@@ -62,34 +62,28 @@ mSet <- ANOVA.Anal(mSet, F, 0.05, "fisher")
 # Plot ANOVA
 mSet <- PlotANOVA(mSet, file.path(data_dir, "aov_0_"), "png", 72, width=NA)
 
-### Correlation Analysis
-### OPTION 1 - Heatmap specifying pearson distance and an overview
-mSet<-PlotCorrHeatMap(mSet, file.path(data_dir, "corr_0_"), "png", 72, width=NA, "col", "pearson", "bwm", "overview", F, F, 0.0)
 
-### OPTION 2 - Heatmap specifying pearson correlation and a detailed view
-mSet<-PlotCorrHeatMap(mSet, file.path(data_dir, "corr_1_"),  format = "png", dpi=72, width=NA, "col", "spearman", "bwm", "detail", F, F, 999)
+### 壞掉了
+# ### Correlation Analysis
+# ### OPTION 1 - Heatmap specifying pearson distance and an overview
+# mSet<-PlotCorrHeatMap(mSet, file.path(data_dir, "corr_0_"), "png", 72, width=NA, "col", "pearson", "bwm", "overview", F, F, 0.0)
+
+# ### OPTION 2 - Heatmap specifying pearson correlation and a detailed view
+# mSet<-PlotCorrHeatMap(mSet, file.path(data_dir, "corr_1_"),  format = "png", dpi=72, width=NA, "col", "spearman", "bwm", "detail", F, F, 999)
+###
 
 
 
-mSet <- PlotCorrHeatMap(
-  mSetObj     = mSet,
-  imgName     = file.path(data_dir, "corr_0_"),
-  format      = "json",
-  dpi         = 72,
-  width       = 8,
-  target      = "col",
-  cor.method  = "pearson",
-  colors      = "col",
-  fix.col     = FALSE,
-  no.clst     = FALSE,
-  fz          = 12,
-  unit        = 1,          # 不能用 "in"，一定要數字！
-  corrCutoff  = 0
+
+### Correlation Analysis(fixed)
+source("scripts/functions/PlotCorrHeatMap_fixed.R")
+ mSet <- PlotCorrHeatMap_fixed(
+  mSetObj = mSet,
+  out_png = "results/statistical/corr_custom.png",
+  target = "col",
+  method = "pearson",
+  corrCutoff = 0
 )
-
-
-
-
 
 
 ### Pattern Searching
@@ -113,9 +107,22 @@ mSet<-PlotPCAScree(mSet, file.path(data_dir, "pca_scree_0_"), "png", dpi = 72, w
 # Create a 2D PCA score plot
 mSet<-PlotPCA2DScore(mSet, file.path(data_dir, "pca_score2d_0_"), format = "png", dpi=72, width=NA, 1, 2, 0.95, 1, 0)
 
-# Create a 3D PCA score plot
-cols <- mSet$dataSet$cls.col
-mSet<-PlotPCA3DScoreImg(mSet, file.path(data_dir, "pca_score3d_0_"), "png", 72, width=NA, 1,2,3, 40)
+# # Create a 3D PCA score plot
+# mSet<-PlotPCA3DScoreImg(mSet, file.path(data_dir, "pca_score3d_0_"), "png", 72, width=NA, 1,2,3, 40)
+
+source("scripts/functions/PlotPCA3DScoreImg_fixed.R")
+mSet <- PlotPCA3DScoreImg_fixed(
+  mSetObj = mSet,
+  imgName = file.path(data_dir, "pca_score3d_fixed_"),
+  format = "png",
+  dpi = 72,
+  width = NA,
+  pc1 = 1,
+  pc2 = 2,
+  pc3 = 3,
+  angle = 40
+)
+
 
 # Create a PCA loadings Plots
 mSet<-PlotPCALoading(mSet, file.path(data_dir, "pca_loading_0_"), "png", 72, width=NA, 1,2);
@@ -220,9 +227,20 @@ PlotEBAM.Cmpd(mSet, file.path(data_dir, "ebam_imp_0_"), "png", 72, width=NA)
 mSet<-PlotHCTree(mSet, file.path(data_dir, "tree_0_"), format = "png", dpi=72, width=NA, "euclidean", "ward.D")
 
 
-### Heatmaps
-# Perform hierarchical clustering and plot heat map
-mSet<-PlotHeatMap(mSet, file.path(data_dir, "heatmap_0_"), "png", 72, width=NA, "norm", "row", "euclidean", "ward.D","bwm", 8, "overview", T, T, NULL, T, F, T, T, T)
+# ### Heatmaps
+# # Perform hierarchical clustering and plot heat map
+# mSet<-PlotHeatMap(mSet, file.path(data_dir, "heatmap_0_"), "png", 72, width=NA, "norm", "row", "euclidean", "ward.D","bwm", 8, "overview", T, T, NULL, T, F, T, T, T)
+
+source("scripts/functions/PlotHeatMap_fixed.R")
+mSet <- PlotHeatMap_fixed(
+  mSetObj = mSet,
+  imgName = file.path(data_dir, "heatmap_fixed.png"),
+  dataOpt = "norm",
+  scaleOpt = "row",
+  smplDist = "euclidean",
+  clstDist = "ward.D",
+  palette = "bwm"
+)
 
 
 ### K-Means
